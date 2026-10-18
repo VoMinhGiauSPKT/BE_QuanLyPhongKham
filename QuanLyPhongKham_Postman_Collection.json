@@ -1,0 +1,722 @@
+{
+	"info": {
+		"_postman_id": "a9876543-1234-4567-89ab-cdef01234567",
+		"name": "QuanLyPhongKham API Collection",
+		"description": "Bộ sưu tập kiểm thử toàn diện tất cả các API cho hệ thống Quản Lý Phòng Khám (Java Servlet / JDBC / SQL Server Roles / JWT).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080/QuanLyPhongKham",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "1. Xác thực (Auth)",
+			"item": [
+				{
+					"name": "1.1 Đăng nhập - Lễ tân (letan1)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.success && jsonData.data && jsonData.data.token) {",
+									"    pm.collectionVariables.set('token', jsonData.data.token);",
+									"    console.log('Token updated for Lễ tân: ' + jsonData.data.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"letan1\",\n  \"password\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					}
+				},
+				{
+					"name": "1.2 Đăng nhập - Bác sĩ (bacsi1)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.success && jsonData.data && jsonData.data.token) {",
+									"    pm.collectionVariables.set('token', jsonData.data.token);",
+									"    console.log('Token updated for Bác sĩ: ' + jsonData.data.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"bacsi1\",\n  \"password\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					}
+				},
+				{
+					"name": "1.3 Đăng nhập - Dược sĩ (duocsi1)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.success && jsonData.data && jsonData.data.token) {",
+									"    pm.collectionVariables.set('token', jsonData.data.token);",
+									"    console.log('Token updated for Dược sĩ: ' + jsonData.data.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"duocsi1\",\n  \"password\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					}
+				},
+				{
+					"name": "1.4 Đăng nhập - Quản trị viên (admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.success && jsonData.data && jsonData.data.token) {",
+									"    pm.collectionVariables.set('token', jsonData.data.token);",
+									"    console.log('Token updated for Admin: ' + jsonData.data.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Module Lễ tân / Thu ngân",
+			"item": [
+				{
+					"name": "2.1 Tiếp nhận ca khám mới (sp_tiep_nhan_kham)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"hoTen\": \"Nguyễn Văn Bệnh\",\n  \"ngaySinh\": \"1992-08-20\",\n  \"gioiTinh\": \"Nam\",\n  \"soDienThoai\": \"0987654321\",\n  \"maBacSi\": \"BS001\",\n  \"thoiGianHen\": \"2026-10-17 08:30:00\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/le-tan/tiep-nhan",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"le-tan",
+								"tiep-nhan"
+							]
+						}
+					}
+				},
+				{
+					"name": "2.2 Xem hàng chờ khám hôm nay (View v_hang_cho_kham_hom_nay)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/le-tan/hang-cho",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"le-tan",
+								"hang-cho"
+							]
+						}
+					}
+				},
+				{
+					"name": "2.3 Tìm kiếm bệnh nhân theo SĐT/Tên/CCCD (sp_tim_kiem_benh_nhan)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/le-tan/tim-benh-nhan?keyword=&page=1&size=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"le-tan",
+								"tim-benh-nhan"
+							],
+							"query": [
+								{
+									"key": "keyword",
+									"value": ""
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "2.4 Hủy lịch hẹn khám (sp_gd_huy_lich_hen)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"maLichHen\": \"LH001\",\n  \"lyDo\": \"Bệnh nhân bận việc đột xuất xin hủy lịch\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/le-tan/huy-lich",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"le-tan",
+								"huy-lich"
+							]
+						}
+					}
+				},
+				{
+					"name": "2.5 Thanh toán viện phí & Chốt hóa đơn (sp_gd_thanh_toan_hoa_don)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"maHoSo\": \"HS001\",\n  \"tienGiamGia\": 0,\n  \"hinhThucThanhToan\": \"Tiền mặt\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/le-tan/thanh-toan",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"le-tan",
+								"thanh-toan"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Module Bác sĩ",
+			"item": [
+				{
+					"name": "3.1 Lấy danh sách bệnh nhân chờ phòng khám bác sĩ",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/bac-si/danh-sach-cho",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"bac-si",
+								"danh-sach-cho"
+							]
+						}
+					}
+				},
+				{
+					"name": "3.2 Tra cứu tiền sử bệnh án (fn_lich_su_kham_benh)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/bac-si/lich-su?patientId=BN001",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"bac-si",
+								"lich-su"
+							],
+							"query": [
+								{
+									"key": "patientId",
+									"value": "BN001"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "3.3 Tra cứu thuốc còn tồn kho và còn hạn (fn_tim_thuoc_kha_dung)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/bac-si/thuoc-kha-dung?q=&page=1&size=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"bac-si",
+								"thuoc-kha-dung"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": ""
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "3.4 Chỉ định dịch vụ cận lâm sàng cho hồ sơ",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"maHoSo\": \"HS001\",\n  \"maDichVu\": \"DV001\",\n  \"soLuong\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/bac-si/chi-dinh-dich-vu",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"bac-si",
+								"chi-dinh-dich-vu"
+							]
+						}
+					}
+				},
+				{
+					"name": "3.5 Hoàn tất khám: Lưu hồ sơ & kê đơn thuốc (Trừ kho tự động)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"maLichHen\": \"LH001\",\n  \"maBenhNhan\": \"BN001\",\n  \"trieuChung\": \"Sốt nhẹ, ho khan, đau rát họng\",\n  \"chanDoan\": \"Viêm họng cấp tính\",\n  \"loiDan\": \"Uống nhiều nước ấm, nghỉ ngơi hợp lý\",\n  \"danhSachThuoc\": [\n    {\n      \"maThuoc\": \"T001\",\n      \"soLuong\": 10,\n      \"cachDung\": \"Ngày 2 lần, mỗi lần 1 viên sau ăn\",\n      \"huongDan\": \"Uống sau khi ăn no\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/bac-si/hoan-tat-kham",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"bac-si",
+								"hoan-tat-kham"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Module Dược sĩ",
+			"item": [
+				{
+					"name": "4.1 Xem toàn bộ danh mục kho thuốc",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/duoc-si/kho?page=1&size=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"duoc-si",
+								"kho"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "4.2 Xem cảnh báo tồn kho thấp hoặc cận hạn (View v_canh_bao_ton_kho_thuoc)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/duoc-si/canh-bao",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"duoc-si",
+								"canh-bao"
+							]
+						}
+					}
+				},
+				{
+					"name": "4.3 Cập nhật nhập thêm số lượng kho thuốc",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"maThuoc\": \"T001\",\n  \"soLuongNhap\": 50\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/duoc-si/nhap-kho",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"duoc-si",
+								"nhap-kho"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Module Quản trị viên (Admin)",
+			"item": [
+				{
+					"name": "5.1 Báo cáo tổng hợp doanh thu theo ngày (View v_doanh_thu_theo_ngay)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/bao-cao-ngay",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"bao-cao-ngay"
+							]
+						}
+					}
+				},
+				{
+					"name": "5.2 Báo cáo năng suất và doanh số bác sĩ (View v_doanh_thu_theo_bac_si)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/nang-suat-bac-si",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"nang-suat-bac-si"
+							]
+						}
+					}
+				},
+				{
+					"name": "5.3 Báo cáo doanh thu theo khoảng ngày (sp_thong_ke_doanh_thu_khoang_ngay)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/thong-ke-khoang-ngay?from=2026-01-01&to=2026-12-31",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"thong-ke-khoang-ngay"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "2026-01-01"
+								},
+								{
+									"key": "to",
+									"value": "2026-12-31"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "6. Test Lỗi Phân Quyền DBMS (FORBIDDEN_DB)",
+			"item": [
+				{
+					"name": "6.1 Test Bác sĩ cố tình thanh toán hóa đơn (Bị SQL Server DENY)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"maHoSo\": \"HS001\",\n  \"tienGiamGia\": 0,\n  \"hinhThucThanhToan\": \"Tiền mặt\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/le-tan/thanh-toan",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"le-tan",
+								"thanh-toan"
+							]
+						},
+						"description": "Lưu ý: Chạy request này sau khi đăng nhập bằng tài khoản Bác sĩ (bacsi1). SQL Server sẽ chặn và trả về lỗi FORBIDDEN_DB chuẩn xác."
+					}
+				}
+			]
+		}
+	]
+}
