@@ -141,5 +141,23 @@
         <servlet-name>QuanLyDichVuServlet</servlet-name>
         <url-pattern>/api/admin/dich-vu/*</url-pattern>
     </servlet-mapping>
+
+    <servlet>
+        <servlet-name>NhapNhieuThuocServlet</servlet-name>
+        <servlet-class>com.mycompany.quanlyphongkham.module.duocsi.NhapNhieuThuocServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>NhapNhieuThuocServlet</servlet-name>
+        <url-pattern>/api/duoc-si/nhap-nhieu-thuoc</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>HuyDonThuocServlet</servlet-name>
+        <servlet-class>com.mycompany.quanlyphongkham.module.letan.HuyDonThuocServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>HuyDonThuocServlet</servlet-name>
+        <url-pattern>/api/le-tan/huy-don-thuoc</url-pattern>
+    </servlet-mapping>
 </web-app>
 
