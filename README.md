@@ -61,8 +61,8 @@ QuanLyPhongKham/
 
 ### Bước 4.1: Khởi tạo Cơ sở dữ liệu trong SQL Server
 Trước khi chạy Backend, mở **SQL Server Management Studio (SSMS)**:
-1. Mở file [00_CHAY_TAT_CA_SETUP_ALL.sql](file:///d:/ghichumonhoc/hequantricsdl/doancuoiki/sql/00_CHAY_TAT_CA_SETUP_ALL.sql).
-2. Nhấn **F5 (Execute)** để tạo Database `QuanLyPhongKhamDB`, 11 bảng, Sequence, Trigger, View, Function, Procedure, 5 Transaction và các tài khoản phân quyền.
+1. Mở file [setup.sql](file:///d:/ghichumonhoc/hequantricsdl/doancuoiki/setup.sql) (ở thư mục gốc đồ án) hoặc file [00_CHAY_TAT_CA_SETUP_ALL.sql](file:///d:/ghichumonhoc/hequantricsdl/doancuoiki/sql/00_CHAY_TAT_CA_SETUP_ALL.sql).
+2. Nhấn **F5 (Execute)** để tạo Database `QuanLyPhongKhamDB`, 11 bảng, Sequence, Trigger, View, Function, Procedure, 5 Transaction, phân quyền Least Privilege và nạp dữ liệu mẫu.
 
 ### Bước 4.2: Cấu hình file `.env`
 Kiểm tra file `.env` đặt tại thư mục gốc của project `QuanLyPhongKham/`:
