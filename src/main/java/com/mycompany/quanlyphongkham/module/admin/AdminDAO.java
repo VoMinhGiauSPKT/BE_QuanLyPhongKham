@@ -641,4 +641,167 @@ public class AdminDAO {
     public List<Map<String, Object>> getDanhSachBacSiHoatDong() throws SQLException {
         return getDanhSachBacSiHoatDong(null);
     }
+
+    /**
+     * Lấy danh sách dịch vụ kỹ thuật / cận lâm sàng (hỗ trợ lọc từ khóa và trạng thái)
+     */
+    public List<Map<String, Object>> getDanhSachDichVu(String role, String keyword, String status) throws SQLException {
+        ensureDoctorPermissions();
+        List<Map<String, Object>> list = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT dv.ma_dich_vu, dv.ten_dich_vu, dv.don_gia, dv.mo_ta, dv.trang_thai, ")
+          .append("       (SELECT COUNT(*) FROM chi_dinh_dich_vu cd WHERE cd.ma_dich_vu = dv.ma_dich_vu) AS so_luot_chi_dinh ")
+          .append("FROM dich_vu dv WHERE 1=1 ");
+
+        List<Object> params = new ArrayList<>();
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sb.append("AND (dv.ten_dich_vu LIKE ? OR dv.ma_dich_vu LIKE ? OR dv.mo_ta LIKE ?) ");
+            String kw = "%" + keyword.trim() + "%";
+            params.add(kw);
+            params.add(kw);
+            params.add(kw);
+        }
+
+        if (status != null && !status.trim().isEmpty() && !status.equalsIgnoreCase("ALL")) {
+            if (status.equalsIgnoreCase("ACTIVE") || status.equals("1")) {
+                sb.append("AND dv.trang_thai = 1 ");
+            } else if (status.equalsIgnoreCase("INACTIVE") || status.equals("0")) {
+                sb.append("AND dv.trang_thai = 0 ");
+            }
+        }
+        sb.append("ORDER BY dv.ma_dich_vu ASC;");
+
+        try (Connection conn = getConnection(role);
+             PreparedStatement ps = conn.prepareStatement(sb.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("maDichVu", rs.getString("ma_dich_vu"));
+                    map.put("tenDichVu", rs.getString("ten_dich_vu"));
+                    map.put("donGia", rs.getBigDecimal("don_gia"));
+                    map.put("moTa", rs.getString("mo_ta"));
+                    map.put("trangThai", rs.getBoolean("trang_thai"));
+                    map.put("soLuotChiDinh", rs.getInt("so_luot_chi_dinh"));
+                    list.add(map);
+                }
+            }
+        }
+        return list;
+    }
+
+    /**
+     * Thêm mới một dịch vụ khám / cận lâm sàng (Tự sinh mã DV001, DV002...)
+     */
+    public String themDichVu(String role, String tenDichVu, java.math.BigDecimal donGia, String moTa) throws SQLException {
+        ensureDoctorPermissions();
+        String sql = "DECLARE @out TABLE (id VARCHAR(20)); " +
+                     "INSERT INTO dich_vu (ten_dich_vu, don_gia, mo_ta, trang_thai) " +
+                     "OUTPUT INSERTED.ma_dich_vu INTO @out " +
+                     "VALUES (?, ?, ?, 1); " +
+                     "SELECT id FROM @out;";
+
+        try (Connection conn = getConnection(role);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, tenDichVu.trim());
+            ps.setBigDecimal(2, donGia);
+            ps.setString(3, moTa != null ? moTa.trim() : null);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("id");
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Cập nhật thông tin dịch vụ (Tên, đơn giá, mô tả, trạng thái)
+     */
+    public boolean capNhatDichVu(String role, String maDichVu, String tenDichVu, java.math.BigDecimal donGia, String moTa, Boolean trangThai) throws SQLException {
+        ensureDoctorPermissions();
+        String sql = "UPDATE dich_vu SET ten_dich_vu = ?, don_gia = ?, mo_ta = ?, " +
+                     "trang_thai = ISNULL(?, trang_thai) " +
+                     "WHERE ma_dich_vu = ?;";
+
+        try (Connection conn = getConnection(role);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, tenDichVu.trim());
+            ps.setBigDecimal(2, donGia);
+            ps.setString(3, moTa != null ? moTa.trim() : null);
+            if (trangThai != null) {
+                ps.setBoolean(4, trangThai);
+            } else {
+                ps.setNull(4, Types.BIT);
+            }
+            ps.setString(5, maDichVu.trim());
+
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Bật/Tắt trạng thái hoạt động của dịch vụ
+     */
+    public boolean doiTrangThaiDichVu(String role, String maDichVu, boolean trangThai) throws SQLException {
+        ensureDoctorPermissions();
+        String sql = "UPDATE dich_vu SET trang_thai = ? WHERE ma_dich_vu = ?;";
+        try (Connection conn = getConnection(role);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setBoolean(1, trangThai);
+            ps.setString(2, maDichVu.trim());
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Xóa dịch vụ hoặc chuyển sang ngừng cung cấp nếu đã có chỉ định trong lịch sử
+     */
+    public Map<String, Object> xoaHoacKhoaDichVu(String role, String maDichVu) throws SQLException {
+        ensureDoctorPermissions();
+        Map<String, Object> result = new HashMap<>();
+        String checkSql = "SELECT COUNT(*) FROM chi_dinh_dich_vu WHERE ma_dich_vu = ?;";
+        
+        try (Connection conn = getConnection(role)) {
+            boolean hasHistory = false;
+            try (PreparedStatement checkPs = conn.prepareStatement(checkSql)) {
+                checkPs.setString(1, maDichVu);
+                try (ResultSet rs = checkPs.executeQuery()) {
+                    if (rs.next()) {
+                        hasHistory = rs.getInt(1) > 0;
+                    }
+                }
+            }
+
+            if (hasHistory) {
+                // Soft delete: chuyển trạng thái ngưng hoạt động
+                String softDeleteSql = "UPDATE dich_vu SET trang_thai = 0 WHERE ma_dich_vu = ?;";
+                try (PreparedStatement ps = conn.prepareStatement(softDeleteSql)) {
+                    ps.setString(1, maDichVu);
+                    ps.executeUpdate();
+                }
+                result.put("isHardDelete", false);
+                result.put("message", "Dịch vụ " + maDichVu + " đã có lượt chỉ định trong lịch sử bệnh án nên đã được chuyển sang trạng thái 'Tạm ngưng cung cấp' để bảo toàn dữ liệu!");
+            } else {
+                // Hard delete
+                String deleteSql = "DELETE FROM dich_vu WHERE ma_dich_vu = ?;";
+                try (PreparedStatement ps = conn.prepareStatement(deleteSql)) {
+                    ps.setString(1, maDichVu);
+                    int rows = ps.executeUpdate();
+                    if (rows > 0) {
+                        result.put("isHardDelete", true);
+                        result.put("message", "Đã xóa hoàn toàn dịch vụ " + maDichVu + " khỏi hệ thống!");
+                    } else {
+                        result.put("isHardDelete", false);
+                        result.put("message", "Không tìm thấy dịch vụ " + maDichVu + " cần xóa!");
+                    }
+                }
+            }
+        }
+        return result;
+    }
 }
+

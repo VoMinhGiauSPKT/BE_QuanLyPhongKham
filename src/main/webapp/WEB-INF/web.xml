@@ -128,5 +128,18 @@
         <servlet-name>QuanLyHoaDonServlet</servlet-name>
         <url-pattern>/api/admin/hoa-don</url-pattern>
     </servlet-mapping>
+
+    <servlet>
+        <servlet-name>QuanLyDichVuServlet</servlet-name>
+        <servlet-class>com.mycompany.quanlyphongkham.module.admin.QuanLyDichVuServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>QuanLyDichVuServlet</servlet-name>
+        <url-pattern>/api/admin/dich-vu</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>QuanLyDichVuServlet</servlet-name>
+        <url-pattern>/api/admin/dich-vu/*</url-pattern>
+    </servlet-mapping>
 </web-app>
 
