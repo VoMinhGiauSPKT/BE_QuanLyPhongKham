@@ -1,6 +1,8 @@
 package com.mycompany.quanlyphongkham.module.bacsi;
 
 import com.mycompany.quanlyphongkham.common.PageResponse;
+import com.mycompany.quanlyphongkham.entity.ChiDinhDichVu;
+import com.mycompany.quanlyphongkham.entity.DichVu;
 import com.mycompany.quanlyphongkham.entity.DonThuoc;
 import com.mycompany.quanlyphongkham.entity.LichHen;
 import com.mycompany.quanlyphongkham.entity.Thuoc;
@@ -23,7 +25,7 @@ public class BacSiDAO {
         List<LichHen> list = new ArrayList<>();
         String sql = "SELECT lh.ma_lich_hen, lh.so_thu_tu, bn.ma_benh_nhan, bn.ho_ten AS ten_benh_nhan, " +
                      "bn.so_dien_thoai, bs_user.ho_ten AS ten_bac_si, bs.phong_kham, " +
-                     "lh.thoi_gian_hen, lh.trang_thai " +
+                     "lh.thoi_gian_hen, lh.trang_thai, ISNULL(lh.loai_lich_hen, N'Khám mới') AS loai_lich_hen, lh.ghi_chu " +
                      "FROM lich_hen lh " +
                      "JOIN benh_nhan bn ON lh.ma_benh_nhan = bn.ma_benh_nhan " +
                      "JOIN bac_si bs ON lh.ma_bac_si = bs.ma_bac_si " +
@@ -51,6 +53,8 @@ public class BacSiDAO {
                     lh.setPhongKham(rs.getString("phong_kham"));
                     lh.setThoiGianHen(rs.getTimestamp("thoi_gian_hen"));
                     lh.setTrangThai(rs.getString("trang_thai"));
+                    lh.setLoaiLichHen(rs.getString("loai_lich_hen"));
+                    lh.setGhiChu(rs.getString("ghi_chu"));
                     list.add(lh);
                 }
             }
@@ -199,19 +203,55 @@ public class BacSiDAO {
     }
 
     /**
-     * Hoàn tất khám: Lưu hồ sơ khám bệnh, kích hoạt trigger đổi trạng thái lịch hẹn và kê đơn thuốc (trừ kho)
+     * Lấy danh mục dịch vụ kỹ thuật cận lâm sàng đang hoạt động
+     */
+    public List<DichVu> getDanhSachDichVu(String role) throws SQLException {
+        List<DichVu> list = new ArrayList<>();
+        String sql = "SELECT ma_dich_vu, ten_dich_vu, don_gia, mo_ta, trang_thai FROM dich_vu WHERE trang_thai = 1 ORDER BY ten_dich_vu ASC";
+        try (Connection conn = DBContext.getConnectionByRole(role);
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                DichVu dv = new DichVu();
+                dv.setMaDichVu(rs.getString("ma_dich_vu"));
+                dv.setTenDichVu(rs.getString("ten_dich_vu"));
+                dv.setDonGia(rs.getBigDecimal("don_gia"));
+                dv.setMoTa(rs.getString("mo_ta"));
+                dv.setTrangThai(rs.getBoolean("trang_thai"));
+                list.add(dv);
+            }
+        }
+        return list;
+    }
+
+    /**
+     * Hoàn tất khám: Lưu hồ sơ khám bệnh, kích hoạt trigger đổi trạng thái lịch hẹn, kê đơn thuốc (trừ kho),
+     * lưu chỉ định dịch vụ và tự động lập lịch hẹn tái khám (nếu có chỉ định)
      */
     public String hoanTatKham(String role, String maLichHen, String maBenhNhan, String maBacSi,
                               String trieuChung, String chanDoan, String loiDan,
-                              List<DonThuoc> danhSachThuoc) throws SQLException {
+                              List<DonThuoc> danhSachThuoc,
+                              List<ChiDinhDichVu> danhSachDichVu,
+                              java.sql.Date ngayHenTaiKham,
+                              String ghiChuTaiKham) throws SQLException {
         String insertHoSoSql = "DECLARE @out TABLE (id VARCHAR(20)); " +
-                               "INSERT INTO ho_so_kham (ma_lich_hen, ma_benh_nhan, ma_bac_si, trieu_chung, chan_doan, loi_dan) " +
+                               "INSERT INTO ho_so_kham (ma_lich_hen, ma_benh_nhan, ma_bac_si, trieu_chung, chan_doan, loi_dan, ngay_tai_kham) " +
                                "OUTPUT INSERTED.ma_ho_so INTO @out " +
-                               "VALUES (?, ?, ?, ?, ?, ?); " +
+                               "VALUES (?, ?, ?, ?, ?, ?, ?); " +
                                "SELECT id FROM @out;";
 
         String insertDonThuocSql = "INSERT INTO don_thuoc (ma_ho_so, ma_thuoc, so_luong, cach_dung, huong_dan) " +
                                    "VALUES (?, ?, ?, ?, ?)";
+
+        String insertChiDinhSql = "INSERT INTO chi_dinh_dich_vu (ma_ho_so, ma_dich_vu, so_luong, don_gia, trang_thai) " +
+                                  "VALUES (?, ?, ?, ISNULL(?, (SELECT don_gia FROM dich_vu WHERE ma_dich_vu = ?)), N'Chưa thực hiện')";
+
+        String insertLichTaiKhamSql = "DECLARE @cnt INT; " +
+                                      "SELECT @cnt = COUNT(*) FROM lich_hen WHERE ma_bac_si = ? AND CAST(thoi_gian_hen AS DATE) = CAST(? AS DATE); " +
+                                      "DECLARE @target_time DATETIME; " +
+                                      "SET @target_time = DATEADD(minute, @cnt * 15, CAST(? AS DATETIME) + CAST('08:00:00' AS DATETIME)); " +
+                                      "INSERT INTO lich_hen (ma_benh_nhan, ma_bac_si, thoi_gian_hen, so_thu_tu, trang_thai, loai_lich_hen, ma_lich_hen_truoc, ghi_chu) " +
+                                      "VALUES (?, ?, @target_time, 0, N'Hẹn tái khám', N'Tái khám', ?, ?);";
 
         try (Connection conn = DBContext.getConnectionByRole(role)) {
             conn.setAutoCommit(false);
@@ -225,6 +265,11 @@ public class BacSiDAO {
                     psHoSo.setString(4, trieuChung != null ? trieuChung : "");
                     psHoSo.setString(5, chanDoan != null ? chanDoan : "");
                     psHoSo.setString(6, loiDan != null ? loiDan : "");
+                    if (ngayHenTaiKham != null) {
+                        psHoSo.setDate(7, ngayHenTaiKham);
+                    } else {
+                        psHoSo.setNull(7, Types.DATE);
+                    }
 
                     try (ResultSet rs = psHoSo.executeQuery()) {
                         if (rs.next()) {
@@ -250,6 +295,42 @@ public class BacSiDAO {
                     }
                 }
 
+                // 3. Chỉ định dịch vụ cận lâm sàng / kỹ thuật
+                if (danhSachDichVu != null && !danhSachDichVu.isEmpty()) {
+                    try (PreparedStatement psDv = conn.prepareStatement(insertChiDinhSql)) {
+                        for (ChiDinhDichVu cd : danhSachDichVu) {
+                            psDv.setString(1, maHoSo);
+                            psDv.setString(2, cd.getMaDichVu());
+                            psDv.setInt(3, cd.getSoLuong() != null && cd.getSoLuong() > 0 ? cd.getSoLuong() : 1);
+                            if (cd.getDonGia() != null) {
+                                psDv.setBigDecimal(4, cd.getDonGia());
+                            } else {
+                                psDv.setNull(4, Types.DECIMAL);
+                            }
+                            psDv.setString(5, cd.getMaDichVu());
+                            psDv.addBatch();
+                        }
+                        psDv.executeBatch();
+                    }
+                }
+
+                // 4. Tự động lập lịch hẹn tái khám nếu có chỉ định ngày tái khám
+                if (ngayHenTaiKham != null) {
+                    try (PreparedStatement psTaiKham = conn.prepareStatement(insertLichTaiKhamSql)) {
+                        psTaiKham.setString(1, maBacSi);
+                        psTaiKham.setDate(2, ngayHenTaiKham);
+                        psTaiKham.setDate(3, ngayHenTaiKham);
+                        psTaiKham.setString(4, maBenhNhan);
+                        psTaiKham.setString(5, maBacSi);
+                        psTaiKham.setString(6, maLichHen);
+                        String note = (ghiChuTaiKham != null && !ghiChuTaiKham.trim().isEmpty())
+                                ? ghiChuTaiKham.trim()
+                                : ("Tái khám theo chỉ định - " + (chanDoan != null ? chanDoan : ""));
+                        psTaiKham.setString(7, note);
+                        psTaiKham.executeUpdate();
+                    }
+                }
+
                 conn.commit();
                 return maHoSo;
 
@@ -260,5 +341,24 @@ public class BacSiDAO {
                 conn.setAutoCommit(true);
             }
         }
+    }
+
+    /**
+     * Tương thích phiên bản: Hoàn tất khám có đơn thuốc và chỉ định dịch vụ (không hẹn tái khám)
+     */
+    public String hoanTatKham(String role, String maLichHen, String maBenhNhan, String maBacSi,
+                              String trieuChung, String chanDoan, String loiDan,
+                              List<DonThuoc> danhSachThuoc,
+                              List<ChiDinhDichVu> danhSachDichVu) throws SQLException {
+        return hoanTatKham(role, maLichHen, maBenhNhan, maBacSi, trieuChung, chanDoan, loiDan, danhSachThuoc, danhSachDichVu, null, null);
+    }
+
+    /**
+     * Tương thích phiên bản cũ: Hoàn tất khám chỉ có đơn thuốc
+     */
+    public String hoanTatKham(String role, String maLichHen, String maBenhNhan, String maBacSi,
+                              String trieuChung, String chanDoan, String loiDan,
+                              List<DonThuoc> danhSachThuoc) throws SQLException {
+        return hoanTatKham(role, maLichHen, maBenhNhan, maBacSi, trieuChung, chanDoan, loiDan, danhSachThuoc, null, null, null);
     }
 }

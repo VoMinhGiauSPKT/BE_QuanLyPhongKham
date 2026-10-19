@@ -19,10 +19,19 @@ public class HoSoKham {
     private String chanDoan;
     private String loiDan;
     private Date ngayKham;
+    private Date ngayTaiKham;
     private List<DonThuoc> danhSachThuoc;
     private List<ChiDinhDichVu> danhSachDichVu;
 
     public HoSoKham() {}
+
+    public Date getNgayTaiKham() {
+        return ngayTaiKham;
+    }
+
+    public void setNgayTaiKham(Date ngayTaiKham) {
+        this.ngayTaiKham = ngayTaiKham;
+    }
 
     public String getMaHoSo() {
         return maHoSo;
