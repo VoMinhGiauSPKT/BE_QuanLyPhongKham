@@ -7,16 +7,30 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import com.mycompany.quanlyphongkham.entity.DichVu;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @WebServlet(name = "ChiDinhDichVuServlet", urlPatterns = {"/api/bac-si/chi-dinh-dich-vu"})
 public class ChiDinhDichVuServlet extends BaseServlet {
 
     private final BacSiDAO bacSiDAO = new BacSiDAO();
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String role = getCurrentUserRole(req);
+        try {
+            List<DichVu> list = bacSiDAO.getDanhSachDichVu(role);
+            sendJsonResponse(resp, HttpServletResponse.SC_OK,
+                    ApiResponse.ok(list, "Lấy danh mục dịch vụ cận lâm sàng thành công!"));
+        } catch (SQLException e) {
+            handleSqlException(resp, e, "Lỗi khi lấy danh mục dịch vụ!");
+        }
+    }
 
     public static class ChiDinhRequest {
         public String maHoSo;   // HS001 hoặc 1

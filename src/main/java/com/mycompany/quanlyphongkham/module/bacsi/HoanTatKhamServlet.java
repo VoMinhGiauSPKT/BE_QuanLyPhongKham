@@ -2,6 +2,7 @@ package com.mycompany.quanlyphongkham.module.bacsi;
 
 import com.mycompany.quanlyphongkham.common.ApiResponse;
 import com.mycompany.quanlyphongkham.common.BaseServlet;
+import com.mycompany.quanlyphongkham.entity.ChiDinhDichVu;
 import com.mycompany.quanlyphongkham.entity.DonThuoc;
 import com.mycompany.quanlyphongkham.util.FormatUtil;
 import jakarta.servlet.annotation.WebServlet;
@@ -9,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,6 +29,12 @@ public class HoanTatKhamServlet extends BaseServlet {
         public String huongDan;
     }
 
+    public static class DichVuItemRequest {
+        public String maDichVu; // DV001 hoặc 1
+        public Integer soLuong;
+        public BigDecimal donGia;
+    }
+
     public static class HoanTatKhamRequest {
         public String maLichHen;  // LH001 hoặc 1
         public String maBenhNhan; // BN001 hoặc 1
@@ -34,7 +42,10 @@ public class HoanTatKhamServlet extends BaseServlet {
         public String trieuChung;
         public String chanDoan;
         public String loiDan;
+        public String ngayHenTaiKham; // YYYY-MM-DD
+        public String ghiChuTaiKham;
         public List<ThuocItemRequest> danhSachThuoc;
+        public List<DichVuItemRequest> danhSachDichVu;
     }
 
     @Override
@@ -79,6 +90,35 @@ public class HoanTatKhamServlet extends BaseServlet {
             }
         }
 
+        List<ChiDinhDichVu> listDichVu = new ArrayList<>();
+        if (body.danhSachDichVu != null) {
+            for (DichVuItemRequest item : body.danhSachDichVu) {
+                if (item.maDichVu != null) {
+                    String dichVuId = FormatUtil.normalizeDichVu(item.maDichVu);
+                    if (dichVuId != null) {
+                        ChiDinhDichVu cd = new ChiDinhDichVu();
+                        cd.setMaDichVu(dichVuId);
+                        cd.setSoLuong(item.soLuong != null && item.soLuong > 0 ? item.soLuong : 1);
+                        cd.setDonGia(item.donGia);
+                        listDichVu.add(cd);
+                    }
+                }
+            }
+        }
+
+        java.sql.Date sqlNgayHen = null;
+        if (body.ngayHenTaiKham != null && !body.ngayHenTaiKham.trim().isEmpty()) {
+            try {
+                String cleanDate = body.ngayHenTaiKham.trim();
+                if (cleanDate.contains("T")) {
+                    cleanDate = cleanDate.substring(0, cleanDate.indexOf("T"));
+                }
+                sqlNgayHen = java.sql.Date.valueOf(cleanDate);
+            } catch (Exception ex) {
+                System.err.println("[HoanTatKhamServlet] Ngày hẹn tái khám không hợp lệ: " + body.ngayHenTaiKham);
+            }
+        }
+
         try {
             String maHoSo = bacSiDAO.hoanTatKham(
                     role,
@@ -88,7 +128,10 @@ public class HoanTatKhamServlet extends BaseServlet {
                     body.trieuChung,
                     body.chanDoan,
                     body.loiDan,
-                    listThuoc
+                    listThuoc,
+                    listDichVu,
+                    sqlNgayHen,
+                    body.ghiChuTaiKham
             );
 
             Map<String, Object> data = new HashMap<>();
@@ -96,9 +139,14 @@ public class HoanTatKhamServlet extends BaseServlet {
             data.put("maHoSoCode", maHoSo);
             data.put("maLichHenCode", lichHenId);
             data.put("soLuongThuocKe", listThuoc.size());
+            data.put("soLuongDichVuChiDinh", listDichVu.size());
+            data.put("coHenTaiKham", sqlNgayHen != null);
+            if (sqlNgayHen != null) {
+                data.put("ngayHenTaiKham", sqlNgayHen.toString());
+            }
 
             sendJsonResponse(resp, HttpServletResponse.SC_OK,
-                    ApiResponse.ok(data, "Hoàn tất khám bệnh, lưu hồ sơ và kê đơn thuốc thành công!"));
+                    ApiResponse.ok(data, "Hoàn tất khám bệnh, lưu hồ sơ, kê đơn thuốc và gán chỉ định dịch vụ thành công!"));
 
         } catch (SQLException e) {
             handleSqlException(resp, e, "Lỗi khi hoàn tất khám bệnh: " + e.getMessage());

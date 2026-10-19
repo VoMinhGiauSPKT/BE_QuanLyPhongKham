@@ -8,4 +8,125 @@
             30
         </session-timeout>
     </session-config>
+    <servlet>
+        <servlet-name>DanhSachChoThanhToanServlet</servlet-name>
+        <servlet-class>com.mycompany.quanlyphongkham.module.letan.DanhSachChoThanhToanServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DanhSachChoThanhToanServlet</servlet-name>
+        <url-pattern>/api/le-tan/cho-thanh-toan</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ChiTietThanhToanServlet</servlet-name>
+        <servlet-class>com.mycompany.quanlyphongkham.module.letan.ChiTietThanhToanServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ChiTietThanhToanServlet</servlet-name>
+        <url-pattern>/api/le-tan/chi-tiet-thanh-toan</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>LichTaiKhamServlet</servlet-name>
+        <servlet-class>com.mycompany.quanlyphongkham.module.letan.LichTaiKhamServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LichTaiKhamServlet</servlet-name>
+        <url-pattern>/api/le-tan/lich-tai-kham</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>TiepNhanTaiKhamServlet</servlet-name>
+        <servlet-class>com.mycompany.quanlyphongkham.module.letan.TiepNhanTaiKhamServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TiepNhanTaiKhamServlet</servlet-name>
+        <url-pattern>/api/le-tan/tiep-nhan-tai-kham</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>QuanLyThuocServlet</servlet-name>
+        <servlet-class>com.mycompany.quanlyphongkham.module.duocsi.QuanLyThuocServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>QuanLyThuocServlet</servlet-name>
+        <url-pattern>/api/duoc-si/thuoc</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>NhatKyGiaServlet</servlet-name>
+        <servlet-class>com.mycompany.quanlyphongkham.module.duocsi.NhatKyGiaServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>NhatKyGiaServlet</servlet-name>
+        <url-pattern>/api/duoc-si/nhat-ky-gia</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>QuanLyNguoiDungServlet</servlet-name>
+        <servlet-class>com.mycompany.quanlyphongkham.module.admin.QuanLyNguoiDungServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>QuanLyNguoiDungServlet</servlet-name>
+        <url-pattern>/api/admin/nguoi-dung</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>TrangThaiNguoiDungServlet</servlet-name>
+        <servlet-class>com.mycompany.quanlyphongkham.module.admin.TrangThaiNguoiDungServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TrangThaiNguoiDungServlet</servlet-name>
+        <url-pattern>/api/admin/nguoi-dung/status</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TrangThaiNguoiDungServlet</servlet-name>
+        <url-pattern>/api/admin/nguoi-dung/reset-password</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>DanhSachBacSiHoatDongServlet</servlet-name>
+        <servlet-class>com.mycompany.quanlyphongkham.module.bacsi.DanhSachBacSiHoatDongServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DanhSachBacSiHoatDongServlet</servlet-name>
+        <url-pattern>/api/bac-si/danh-sach-hoat-dong</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>BaoCaoNgayServlet</servlet-name>
+        <servlet-class>com.mycompany.quanlyphongkham.module.admin.BaoCaoNgayServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>BaoCaoNgayServlet</servlet-name>
+        <url-pattern>/api/admin/bao-cao-ngay</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>NangSuatBacSiServlet</servlet-name>
+        <servlet-class>com.mycompany.quanlyphongkham.module.admin.NangSuatBacSiServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>NangSuatBacSiServlet</servlet-name>
+        <url-pattern>/api/admin/nang-suat-bac-si</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ThongKeKhoangNgayServlet</servlet-name>
+        <servlet-class>com.mycompany.quanlyphongkham.module.admin.ThongKeKhoangNgayServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ThongKeKhoangNgayServlet</servlet-name>
+        <url-pattern>/api/admin/thong-ke-khoang-ngay</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>QuanLyHoaDonServlet</servlet-name>
+        <servlet-class>com.mycompany.quanlyphongkham.module.admin.QuanLyHoaDonServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>QuanLyHoaDonServlet</servlet-name>
+        <url-pattern>/api/admin/hoa-don</url-pattern>
+    </servlet-mapping>
 </web-app>
+

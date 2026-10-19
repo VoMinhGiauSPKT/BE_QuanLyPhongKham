@@ -21,9 +21,21 @@ public class KhoThuocServlet extends BaseServlet {
         String role = getCurrentUserRole(req);
         int page = getIntParameter(req, "page", 1);
         int size = getIntParameter(req, "size", 10);
+        String keyword = req.getParameter("q");
+        if (keyword == null) keyword = req.getParameter("keyword");
+
+        Boolean statusFilter = null;
+        String statusParam = req.getParameter("status");
+        if (statusParam != null && !statusParam.trim().isEmpty() && !statusParam.equalsIgnoreCase("all")) {
+            if ("active".equalsIgnoreCase(statusParam) || "true".equalsIgnoreCase(statusParam) || "1".equals(statusParam)) {
+                statusFilter = true;
+            } else if ("inactive".equalsIgnoreCase(statusParam) || "false".equalsIgnoreCase(statusParam) || "0".equals(statusParam)) {
+                statusFilter = false;
+            }
+        }
 
         try {
-            PageResponse<Thuoc> pageResponse = duocSiDAO.getToanBoKhoThuoc(role, page, size);
+            PageResponse<Thuoc> pageResponse = duocSiDAO.getToanBoKhoThuoc(role, keyword, statusFilter, page, size);
             sendJsonResponse(resp, HttpServletResponse.SC_OK,
                     ApiResponse.ok(pageResponse, "Lấy danh mục kho thuốc thành công (Trang " + pageResponse.getPage() + "/" + pageResponse.getTotalPages() + ")."));
         } catch (SQLException e) {

@@ -43,17 +43,19 @@ public class ThanhToanServlet extends BaseServlet {
         }
 
         try {
-            leTanDAO.thanhToanHoaDon(
+            Map<String, Object> data = leTanDAO.thanhToanHoaDon(
                     role,
                     hoSoId,
                     body.tienGiamGia != null ? body.tienGiamGia : BigDecimal.ZERO,
                     body.hinhThucThanhToan != null ? body.hinhThucThanhToan : "Tiền mặt"
             );
 
-            Map<String, Object> data = new HashMap<>();
-            data.put("maHoSo", hoSoId);
-            data.put("maHoSoCode", hoSoId);
-            data.put("trangThai", "Đã thanh toán");
+            if (data == null || data.isEmpty()) {
+                data = new HashMap<>();
+                data.put("maHoSo", hoSoId);
+                data.put("maHoSoCode", hoSoId);
+                data.put("trangThai", "Đã thanh toán");
+            }
 
             sendJsonResponse(resp, HttpServletResponse.SC_OK,
                     ApiResponse.ok(data, "Thanh toán viện phí và chốt hóa đơn thành công!"));

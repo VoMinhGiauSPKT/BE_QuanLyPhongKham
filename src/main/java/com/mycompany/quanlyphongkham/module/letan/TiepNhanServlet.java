@@ -24,6 +24,8 @@ public class TiepNhanServlet extends BaseServlet {
         public String ngaySinh;    // yyyy-MM-dd
         public String gioiTinh;    // Nam / Nữ / Khác
         public String soDienThoai;
+        public String soCccd;      // Số CCCD định danh bệnh nhân
+        public String diaChi;      // Địa chỉ nơi ở
         public String maBacSi;     // BS001 hoặc 1
         public String thoiGianHen; // Optional, yyyy-MM-dd HH:mm:ss
     }
@@ -61,6 +63,8 @@ public class TiepNhanServlet extends BaseServlet {
                     ns,
                     body.gioiTinh != null ? body.gioiTinh : "Khác",
                     body.soDienThoai.trim(),
+                    body.soCccd != null ? body.soCccd.trim() : null,
+                    body.diaChi != null ? body.diaChi.trim() : null,
                     bacSiId,
                     tgHen
             );

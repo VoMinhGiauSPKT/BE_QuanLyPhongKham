@@ -18,8 +18,26 @@ public class LichHen {
     private Integer soThuTu;
     private String trangThai;
     private String ghiChu;
+    private String loaiLichHen; // "Khám mới", "Tái khám"
+    private String maLichHenTruoc;
 
     public LichHen() {}
+
+    public String getLoaiLichHen() {
+        return loaiLichHen;
+    }
+
+    public void setLoaiLichHen(String loaiLichHen) {
+        this.loaiLichHen = loaiLichHen;
+    }
+
+    public String getMaLichHenTruoc() {
+        return maLichHenTruoc;
+    }
+
+    public void setMaLichHenTruoc(String maLichHenTruoc) {
+        this.maLichHenTruoc = maLichHenTruoc;
+    }
 
     public String getMaLichHen() {
         return maLichHen;
