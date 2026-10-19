@@ -123,6 +123,10 @@ public class BacSiDAO {
      * Tra cứu danh mục thuốc khả dụng có phân trang (OFFSET ... FETCH NEXT)
      */
     public PageResponse<Thuoc> timThuocKhaDung(String role, String tuKhoa, int page, int size) throws SQLException {
+        return timThuocKhaDung(role, tuKhoa, page, size, false);
+    }
+
+    public PageResponse<Thuoc> timThuocKhaDung(String role, String tuKhoa, int page, int size, boolean includeExpired) throws SQLException {
         if (page < 1) page = 1;
         if (size < 1) size = 10;
         if (size > 100) size = 100;
@@ -132,11 +136,24 @@ public class BacSiDAO {
         long totalElements = 0;
         String searchParam = tuKhoa != null ? tuKhoa.trim() : "";
 
-        String countSql = "SELECT COUNT(*) FROM dbo.fn_tim_thuoc_kha_dung(?)";
-        String dataSql = "SELECT ma_thuoc, ten_thuoc, don_vi_tinh, so_luong_ton, don_gia, han_su_dung " +
-                         "FROM dbo.fn_tim_thuoc_kha_dung(?) " +
-                         "ORDER BY ten_thuoc ASC " +
-                         "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        String countSql;
+        String dataSql;
+
+        if (includeExpired) {
+            // Hiển thị toàn bộ thuốc để bác sĩ có thể kiểm thử Trigger 2 trg_kiem_tra_han_thuoc
+            countSql = "SELECT COUNT(*) FROM thuoc WHERE trang_thai = 1 AND ten_thuoc LIKE N'%' + ? + '%'";
+            dataSql = "SELECT ma_thuoc, ten_thuoc, don_vi_tinh, so_luong_ton, don_gia, han_su_dung " +
+                      "FROM thuoc WHERE trang_thai = 1 AND ten_thuoc LIKE N'%' + ? + '%' " +
+                      "ORDER BY ten_thuoc ASC " +
+                      "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        } else {
+            // Mặc định gọi hàm CSDL fn_tim_thuoc_kha_dung
+            countSql = "SELECT COUNT(*) FROM dbo.fn_tim_thuoc_kha_dung(?)";
+            dataSql = "SELECT ma_thuoc, ten_thuoc, don_vi_tinh, so_luong_ton, don_gia, han_su_dung " +
+                      "FROM dbo.fn_tim_thuoc_kha_dung(?) " +
+                      "ORDER BY ten_thuoc ASC " +
+                      "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        }
 
         try (Connection conn = DBContext.getConnectionByRole(role)) {
             try (PreparedStatement psCount = conn.prepareStatement(countSql)) {
@@ -200,6 +217,18 @@ public class BacSiDAO {
             }
         }
         return null;
+    }
+
+    /**
+     * Hủy chỉ định dịch vụ cận lâm sàng qua sp_xoa_chi_dinh_dich_vu
+     */
+    public void xoaChiDinhDichVu(String role, String maChiDinh) throws SQLException {
+        String call = "{call sp_xoa_chi_dinh_dich_vu(?)}";
+        try (Connection conn = DBContext.getConnectionByRole(role);
+             CallableStatement cs = conn.prepareCall(call)) {
+            cs.setString(1, maChiDinh);
+            cs.execute();
+        }
     }
 
     /**

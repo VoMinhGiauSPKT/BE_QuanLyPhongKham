@@ -81,4 +81,34 @@ public class ChiDinhDichVuServlet extends BaseServlet {
             handleSqlException(resp, e, "Lỗi khi gán chỉ định dịch vụ!");
         }
     }
+
+    public static class XoaChiDinhRequest {
+        public String maChiDinh;
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String role = getCurrentUserRole(req);
+        String maChiDinh = req.getParameter("maChiDinh");
+        if (maChiDinh == null || maChiDinh.trim().isEmpty()) {
+            XoaChiDinhRequest body = readJsonBody(req, XoaChiDinhRequest.class);
+            if (body != null) {
+                maChiDinh = body.maChiDinh;
+            }
+        }
+
+        if (maChiDinh == null || maChiDinh.trim().isEmpty()) {
+            sendJsonResponse(resp, HttpServletResponse.SC_BAD_REQUEST,
+                    ApiResponse.error("Vui lòng cung cấp mã chỉ định dịch vụ cần xóa!", "MISSING_SERVICE_ORDER_ID"));
+            return;
+        }
+
+        try {
+            bacSiDAO.xoaChiDinhDichVu(role, maChiDinh.trim());
+            sendJsonResponse(resp, HttpServletResponse.SC_OK,
+                    ApiResponse.ok(null, "Hủy chỉ định dịch vụ thành công!"));
+        } catch (SQLException e) {
+            handleSqlException(resp, e, "Lỗi khi xóa chỉ định dịch vụ!");
+        }
+    }
 }

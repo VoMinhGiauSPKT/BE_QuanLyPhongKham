@@ -28,6 +28,10 @@ public class LeTanDAO {
                 stmt.execute("DENY SELECT ON ho_so_kham(chan_doan, loi_dan) TO vai_tro_le_tan");
                 stmt.execute("GRANT EXECUTE ON fn_tinh_tong_tien_dich_vu TO vai_tro_le_tan");
                 stmt.execute("GRANT EXECUTE ON fn_tinh_tong_tien_thuoc TO vai_tro_le_tan");
+                stmt.execute("GRANT EXECUTE ON fn_tinh_tuoi TO vai_tro_le_tan");
+                stmt.execute("GRANT EXECUTE ON sp_gd_huy_don_thuoc TO vai_tro_le_tan");
+                stmt.execute("GRANT EXECUTE ON sp_gd_thanh_toan_hoa_don TO vai_tro_le_tan");
+                stmt.execute("GRANT EXECUTE ON sp_gd_huy_lich_hen TO vai_tro_le_tan");
             }
             checkoutPermsUpdated = true;
         } catch (Exception e) {
@@ -186,6 +190,7 @@ public class LeTanDAO {
                     bn.setMaBenhNhan(rs.getString("ma_benh_nhan"));
                     bn.setHoTen(rs.getString("ho_ten"));
                     bn.setNgaySinh(rs.getDate("ngay_sinh"));
+                    bn.setTuoi((Integer) rs.getObject("tuoi"));
                     bn.setGioiTinh(rs.getString("gioi_tinh"));
                     bn.setSoDienThoai(rs.getString("so_dien_thoai"));
                     bn.setSoCccd(rs.getString("so_cccd"));
@@ -213,7 +218,7 @@ public class LeTanDAO {
 
         String countSql = "SELECT COUNT(*) FROM benh_nhan " +
                           "WHERE ho_ten LIKE ? OR so_dien_thoai LIKE ? OR so_cccd LIKE ?";
-        String dataSql = "SELECT ma_benh_nhan, ho_ten, ngay_sinh, gioi_tinh, so_dien_thoai, " +
+        String dataSql = "SELECT ma_benh_nhan, ho_ten, ngay_sinh, dbo.fn_tinh_tuoi(ngay_sinh) AS tuoi, gioi_tinh, so_dien_thoai, " +
                          "ISNULL(so_cccd, N'Chưa có') AS so_cccd, ISNULL(dia_chi, N'Chưa có') AS dia_chi, ngay_tao " +
                          "FROM benh_nhan " +
                          "WHERE ho_ten LIKE ? OR so_dien_thoai LIKE ? OR so_cccd LIKE ? " +
@@ -245,6 +250,7 @@ public class LeTanDAO {
                             bn.setMaBenhNhan(rs.getString("ma_benh_nhan"));
                             bn.setHoTen(rs.getString("ho_ten"));
                             bn.setNgaySinh(rs.getDate("ngay_sinh"));
+                            bn.setTuoi((Integer) rs.getObject("tuoi"));
                             bn.setGioiTinh(rs.getString("gioi_tinh"));
                             bn.setSoDienThoai(rs.getString("so_dien_thoai"));
                             bn.setSoCccd(rs.getString("so_cccd"));
@@ -520,6 +526,19 @@ public class LeTanDAO {
              CallableStatement cs = conn.prepareCall(call)) {
             cs.setString(1, maLichHen);
             cs.setString(2, lyDo != null ? lyDo : "Bệnh nhân yêu cầu hủy");
+            cs.execute();
+        }
+    }
+
+    /**
+     * Hủy đơn thuốc qua Stored Procedure sp_gd_huy_don_thuoc (kích hoạt trigger trg_xoa_don_hoan_kho)
+     */
+    public void huyDonThuoc(String role, String maHoSo) throws SQLException {
+        ensureCheckoutPermissions();
+        String call = "{call sp_gd_huy_don_thuoc(?)}";
+        try (Connection conn = DBContext.getConnectionByRole(role);
+             CallableStatement cs = conn.prepareCall(call)) {
+            cs.setString(1, maHoSo);
             cs.execute();
         }
     }

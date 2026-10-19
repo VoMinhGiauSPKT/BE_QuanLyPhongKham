@@ -29,11 +29,12 @@ public class ThuocKhaDungServlet extends BaseServlet {
 
         int page = getIntParameter(req, "page", 1);
         int size = getIntParameter(req, "size", 10);
+        boolean includeExpired = "true".equalsIgnoreCase(req.getParameter("includeExpired"));
 
         try {
-            PageResponse<Thuoc> pageResponse = bacSiDAO.timThuocKhaDung(role, keyword.trim(), page, size);
+            PageResponse<Thuoc> pageResponse = bacSiDAO.timThuocKhaDung(role, keyword.trim(), page, size, includeExpired);
             sendJsonResponse(resp, HttpServletResponse.SC_OK,
-                    ApiResponse.ok(pageResponse, "Tìm thấy " + pageResponse.getTotalElements() + " loại thuốc khả dụng (Trang " + pageResponse.getPage() + "/" + pageResponse.getTotalPages() + ")."));
+                    ApiResponse.ok(pageResponse, "Tìm thấy " + pageResponse.getTotalElements() + " loại thuốc (Trang " + pageResponse.getPage() + "/" + pageResponse.getTotalPages() + ")."));
         } catch (SQLException e) {
             handleSqlException(resp, e, "Lỗi tra cứu thuốc khả dụng!");
         }

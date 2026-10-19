@@ -773,6 +773,7 @@ GO
 -- Transaction 4: Hủy đơn thuốc và hoàn kho
 CREATE OR ALTER PROCEDURE sp_gd_huy_don_thuoc
     @ma_ho_so VARCHAR(20)
+WITH EXECUTE AS OWNER
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -934,6 +935,10 @@ GRANT EXECUTE ON sp_tiep_nhan_kham TO vai_tro_le_tan;
 GRANT EXECUTE ON sp_tim_kiem_benh_nhan TO vai_tro_le_tan;
 GRANT EXECUTE ON sp_gd_thanh_toan_hoa_don TO vai_tro_le_tan;
 GRANT EXECUTE ON sp_gd_huy_lich_hen TO vai_tro_le_tan;
+GRANT EXECUTE ON sp_gd_huy_don_thuoc TO vai_tro_le_tan;
+GRANT EXECUTE ON fn_tinh_tuoi TO vai_tro_le_tan;
+GRANT EXECUTE ON fn_tinh_tong_tien_thuoc TO vai_tro_le_tan;
+GRANT EXECUTE ON fn_tinh_tong_tien_dich_vu TO vai_tro_le_tan;
 GRANT UPDATE ON SEQUENCE::seq_benh_nhan TO vai_tro_le_tan;
 GRANT UPDATE ON SEQUENCE::seq_lich_hen TO vai_tro_le_tan;
 GRANT UPDATE ON SEQUENCE::seq_hoa_don TO vai_tro_le_tan;

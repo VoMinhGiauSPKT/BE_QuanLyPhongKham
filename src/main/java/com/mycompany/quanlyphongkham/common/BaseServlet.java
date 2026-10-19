@@ -35,11 +35,12 @@ public abstract class BaseServlet extends HttpServlet {
     }
 
     protected void sendJsonResponse(HttpServletResponse response, int status, ApiResponse<?> apiResponse) throws IOException {
-        response.setCharacterEncoding("UTF-8");
         response.setContentType("application/json;charset=UTF-8");
+        response.setCharacterEncoding("UTF-8");
         response.setStatus(status);
-        String json = gson.toJson(apiResponse);
-        response.getWriter().write(json);
+        byte[] bytes = gson.toJson(apiResponse).getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        response.getOutputStream().write(bytes);
+        response.getOutputStream().flush();
     }
 
     protected void handleSqlException(HttpServletResponse response, SQLException ex, String defaultMsg) throws IOException {
@@ -49,11 +50,28 @@ public abstract class BaseServlet extends HttpServlet {
             (ex.getMessage() != null && ex.getMessage().toLowerCase().contains("permission was denied"))) {
             sendJsonResponse(response, HttpServletResponse.SC_FORBIDDEN,
                     ApiResponse.forbiddenDb("Lỗi phân quyền DBMS: " + ex.getMessage()));
-        } else {
-            String msg = (ex.getMessage() != null && !ex.getMessage().isEmpty()) ? ex.getMessage() : defaultMsg;
-            sendJsonResponse(response, HttpServletResponse.SC_BAD_REQUEST,
-                    ApiResponse.error(msg, "DB_ERROR"));
+            return;
         }
+
+        String rawMsg = (ex.getMessage() != null && !ex.getMessage().trim().isEmpty()) ? ex.getMessage() : defaultMsg;
+        String userFriendlyMsg = rawMsg;
+
+        if (rawMsg.contains("CK_thuoc_so_luong_ton")) {
+            userFriendlyMsg = "CSDL báo lỗi vi phạm Ràng buộc toàn vẹn [CK_thuoc_so_luong_ton]: Số lượng tồn kho không được phép nhỏ hơn 0!";
+        } else if (rawMsg.contains("CK_thuoc_don_gia")) {
+            userFriendlyMsg = "CSDL báo lỗi vi phạm Ràng buộc toàn vẹn [CK_thuoc_don_gia]: Đơn giá thuốc phải lớn hơn 0!";
+        } else if (rawMsg.contains("CK_dich_vu_don_gia")) {
+            userFriendlyMsg = "CSDL báo lỗi vi phạm Ràng buộc toàn vẹn [CK_dich_vu_don_gia]: Đơn giá dịch vụ kỹ thuật phải lớn hơn 0!";
+        } else if (rawMsg.contains("CK_benh_nhan_gioi_tinh")) {
+            userFriendlyMsg = "CSDL báo lỗi vi phạm Ràng buộc toàn vẹn [CK_benh_nhan_gioi_tinh]: Giới tính bệnh nhân bắt buộc phải thuộc ('Nam', 'Nữ', 'Khác')!";
+        } else if (rawMsg.contains("CK_hoa_don_tong_tien")) {
+            userFriendlyMsg = "CSDL báo lỗi vi phạm Ràng buộc toàn vẹn [CK_hoa_don_tong_tien]: Tổng tiền hóa đơn phải khớp (Dịch vụ + Thuốc - Giảm giá >= 0)!";
+        } else if (rawMsg.contains("UQ_lich_hen_bacsi_ngay_sothutu")) {
+            userFriendlyMsg = "CSDL báo lỗi vi phạm Ràng buộc duy nhất [UQ_lich_hen_bacsi_ngay_sothutu]: Trùng số thứ tự khám của bác sĩ trong ngày!";
+        }
+
+        sendJsonResponse(response, HttpServletResponse.SC_BAD_REQUEST,
+                ApiResponse.error(userFriendlyMsg, "DB_ERROR"));
     }
 
     protected String getCurrentUserRole(HttpServletRequest request) {

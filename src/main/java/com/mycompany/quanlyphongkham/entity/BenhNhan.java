@@ -8,6 +8,7 @@ public class BenhNhan {
     private String maBenhNhanCode;
     private String hoTen;
     private Date ngaySinh;
+    private Integer tuoi;
     private String gioiTinh;
     private String soDienThoai;
     private String soCccd;
@@ -50,6 +51,14 @@ public class BenhNhan {
 
     public void setNgaySinh(Date ngaySinh) {
         this.ngaySinh = ngaySinh;
+    }
+
+    public Integer getTuoi() {
+        return tuoi;
+    }
+
+    public void setTuoi(Integer tuoi) {
+        this.tuoi = tuoi;
     }
 
     public String getGioiTinh() {
