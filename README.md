@@ -2,6 +2,9 @@
 
 Hệ thống Backend cho Đồ án **Quản Lý Phòng Khám Tư Nhân (Medicare Clinic)**, xây dựng trên nền tảng **Java Servlet / Jakarta EE 10**, chạy trên máy chủ **Apache Tomcat 10.1.x** và cơ sở dữ liệu **Microsoft SQL Server**.
 
+* 🔗 **Backend Repository:** [https://github.com/VoMinhGiauSPKT/BE_QuanLyPhongKham](https://github.com/VoMinhGiauSPKT/BE_QuanLyPhongKham)
+* 🔗 **Frontend Repository:** [https://github.com/VoMinhGiauSPKT/FE_QuanLyPhongKham](https://github.com/VoMinhGiauSPKT/FE_QuanLyPhongKham)
+
 ---
 
 ## 📌 1. KIẾN TRÚC & CÔNG NGHỆ SỬ DỤNG
