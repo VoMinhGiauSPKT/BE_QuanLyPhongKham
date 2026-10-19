@@ -316,4 +316,18 @@ public class DuocSiDAO {
         }
         return -1;
     }
+
+    /**
+     * Transaction 6: Nhập kho nhiều loại thuốc đồng thời (Atomic Batch Restock - Recovery Data)
+     * Gọi thủ tục sp_gd_nhap_nhieu_thuoc trong CSDL
+     */
+    public void nhapNhieuThuoc(String role, String danhSachJson) throws SQLException {
+        String sql = "{call dbo.sp_gd_nhap_nhieu_thuoc(?)}";
+        try (Connection conn = DBContext.getConnectionByRole(role);
+             java.sql.CallableStatement cs = conn.prepareCall(sql)) {
+            cs.setNString(1, danhSachJson);
+            cs.execute();
+        }
+    }
 }
+

@@ -176,3 +176,94 @@ BEGIN
     END CATCH;
 END;
 GO
+
+-- Nghiệp vụ 6: Nhập kho nhiều loại thuốc đồng thời (Atomic Batch Restock - Recovery Data)
+DROP PROCEDURE IF EXISTS dbo.sp_gd_nhap_nhieu_thuoc;
+GO
+
+CREATE PROCEDURE dbo.sp_gd_nhap_nhieu_thuoc
+    @danh_sach_json NVARCHAR(MAX)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        IF ISJSON(@danh_sach_json) <> 1
+        BEGIN
+            RAISERROR(N'Dữ liệu danh sách thuốc không đúng định dạng JSON!', 16, 1);
+        END;
+
+        DECLARE @tbl TABLE (
+            id INT IDENTITY(1,1),
+            ma_thuoc VARCHAR(20),
+            ten_thuoc NVARCHAR(100),
+            so_luong_str NVARCHAR(100)
+        );
+
+        INSERT INTO @tbl (ma_thuoc, ten_thuoc, so_luong_str)
+        SELECT 
+            j.maThuoc,
+            ISNULL(t.ten_thuoc, j.maThuoc),
+            j.soLuong
+        FROM OPENJSON(@danh_sach_json)
+        WITH (
+            maThuoc VARCHAR(20) '$.maThuoc',
+            soLuong NVARCHAR(100) '$.soLuong'
+        ) j
+        LEFT JOIN thuoc t ON j.maThuoc = t.ma_thuoc;
+
+        IF NOT EXISTS (SELECT 1 FROM @tbl)
+        BEGIN
+            RAISERROR(N'Danh sách thuốc nhập vào không được để trống!', 16, 1);
+        END;
+
+        -- 1. Kiểm tra mã thuốc tồn tại
+        IF EXISTS (SELECT 1 FROM @tbl WHERE ma_thuoc NOT IN (SELECT ma_thuoc FROM thuoc))
+        BEGIN
+            DECLARE @ma_khong_ton_tai VARCHAR(20);
+            SELECT TOP 1 @ma_khong_ton_tai = ma_thuoc FROM @tbl WHERE ma_thuoc NOT IN (SELECT ma_thuoc FROM thuoc);
+            RAISERROR(N'Mã thuốc [%s] không tồn tại trong hệ thống! Toàn bộ giao dịch bị hủy bỏ (Rollback).', 16, 1, @ma_khong_ton_tai);
+        END;
+
+        -- 2. Kiểm tra nếu có thuốc nhập chữ (không thể cast thành số nguyên)
+        DECLARE @ma_loi_chu VARCHAR(20), @ten_loi_chu NVARCHAR(100), @chu_loi NVARCHAR(100);
+        SELECT TOP 1 @ma_loi_chu = ma_thuoc, @ten_loi_chu = ten_thuoc, @chu_loi = so_luong_str
+        FROM @tbl
+        WHERE TRY_CAST(so_luong_str AS INT) IS NULL;
+
+        IF @ma_loi_chu IS NOT NULL
+        BEGIN
+            RAISERROR(N'Lỗi dữ liệu đầu vào: Thuốc [%s - %s] có số lượng nhập là ký tự chữ ("%s") không hợp lệ! Giao dịch đã bị ROLLBACK hoàn toàn để bảo vệ dữ liệu.', 16, 1, @ma_loi_chu, @ten_loi_chu, @chu_loi);
+        END;
+
+        -- 3. Kiểm tra nếu có thuốc nhập số âm hoặc bằng 0
+        DECLARE @ma_loi_am VARCHAR(20), @ten_loi_am NVARCHAR(100), @sl_am INT;
+        SELECT TOP 1 @ma_loi_am = ma_thuoc, @ten_loi_am = ten_thuoc, @sl_am = CAST(so_luong_str AS INT)
+        FROM @tbl
+        WHERE CAST(so_luong_str AS INT) <= 0;
+
+        IF @ma_loi_am IS NOT NULL
+        BEGIN
+            DECLARE @sl_am_str NVARCHAR(20) = CAST(@sl_am AS NVARCHAR(20));
+            RAISERROR(N'Lỗi nghiệp vụ nhập kho: Thuốc [%s - %s] có số lượng nhập là số âm hoặc bằng 0 ("%s")! Giao dịch đã bị ROLLBACK hoàn toàn để bảo vệ dữ liệu.', 16, 1, @ma_loi_am, @ten_loi_am, @sl_am_str);
+        END;
+
+        -- 4. Tất cả hợp lệ -> Cập nhật tăng tồn kho từng thuốc
+        UPDATE t
+        SET t.so_luong_ton = t.so_luong_ton + CAST(b.so_luong_str AS INT)
+        FROM thuoc t
+        JOIN @tbl b ON t.ma_thuoc = b.ma_thuoc;
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH;
+END;
+GO
+
+GRANT EXECUTE ON dbo.sp_gd_nhap_nhieu_thuoc TO vai_tro_duoc_si;
+GRANT EXECUTE ON dbo.sp_gd_nhap_nhieu_thuoc TO vai_tro_quan_tri;
+GO
