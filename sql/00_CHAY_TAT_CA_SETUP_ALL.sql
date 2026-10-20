@@ -997,6 +997,9 @@ GRANT EXECUTE ON sp_gd_ke_nhieu_thuoc TO vai_tro_bac_si;
 GRANT SELECT ON v_chi_tiet_kham_benh TO vai_tro_bac_si;
 GRANT SELECT ON fn_tim_thuoc_kha_dung TO vai_tro_bac_si;
 GRANT SELECT ON fn_lich_su_kham_benh TO vai_tro_bac_si;
+GRANT EXECUTE ON fn_tinh_tuoi TO vai_tro_bac_si;
+GRANT EXECUTE ON fn_tinh_tong_tien_thuoc TO vai_tro_bac_si;
+GRANT EXECUTE ON fn_tinh_tong_tien_dich_vu TO vai_tro_bac_si;
 GRANT UPDATE ON SEQUENCE::seq_ho_so TO vai_tro_bac_si;
 GRANT UPDATE ON SEQUENCE::seq_chi_dinh TO vai_tro_bac_si;
 GRANT UPDATE ON SEQUENCE::seq_don_thuoc TO vai_tro_bac_si;
@@ -1011,6 +1014,8 @@ GRANT SELECT, INSERT, UPDATE ON hoa_don TO vai_tro_le_tan;
 GRANT SELECT ON dich_vu TO vai_tro_le_tan;
 GRANT SELECT ON bac_si TO vai_tro_le_tan;
 GRANT SELECT ON nguoi_dung TO vai_tro_le_tan;
+GRANT SELECT ON thuoc TO vai_tro_le_tan;
+GRANT SELECT ON ho_so_kham TO vai_tro_le_tan;
 GRANT SELECT ON chi_dinh_dich_vu TO vai_tro_le_tan;
 GRANT SELECT ON don_thuoc TO vai_tro_le_tan;
 GRANT SELECT ON nhat_ky_gia_thuoc TO vai_tro_le_tan;
@@ -1039,10 +1044,19 @@ GRANT SELECT ON bac_si TO vai_tro_duoc_si;
 GRANT SELECT ON nguoi_dung TO vai_tro_duoc_si;
 GRANT SELECT ON v_canh_bao_ton_kho_thuoc TO vai_tro_duoc_si;
 GRANT EXECUTE ON sp_gd_nhap_nhieu_thuoc TO vai_tro_duoc_si;
+GRANT EXECUTE ON fn_tinh_tuoi TO vai_tro_duoc_si;
+GRANT EXECUTE ON fn_tinh_tong_tien_thuoc TO vai_tro_duoc_si;
 GRANT UPDATE ON SEQUENCE::seq_thuoc TO vai_tro_duoc_si;
 DENY INSERT, UPDATE, DELETE ON lich_hen TO vai_tro_duoc_si;
 DENY INSERT, UPDATE, DELETE ON ho_so_kham TO vai_tro_duoc_si;
 DENY INSERT, UPDATE, DELETE ON hoa_don TO vai_tro_duoc_si;
+
+-- Quyền dùng chung an toàn trên hệ thống (public)
+GRANT EXECUTE ON dbo.fn_tinh_tuoi TO public;
+GRANT EXECUTE ON dbo.fn_tinh_tong_tien_thuoc TO public;
+GRANT EXECUTE ON dbo.fn_tinh_tong_tien_dich_vu TO public;
+GRANT SELECT ON dbo.fn_lich_su_kham_benh TO public;
+GRANT SELECT ON dbo.fn_tim_thuoc_kha_dung TO public;
 GO
 
 PRINT N'>>> CHÚC MỪNG: BẠN ĐÃ KHỞI TẠO TOÀN BỘ CƠ SỞ DỮ LIỆU QUANLYPHONGKHAMDB THÀNH CÔNG 100%! <<<';
