@@ -15,7 +15,7 @@ public class DBContext {
     }
 
     private static String buildJdbcUrl() {
-        String host = EnvConfig.get("DB_HOST", "localhost");
+        String host = EnvConfig.get("DB_HOST", "phongkham.cdo8y6i4cjsw.eu-north-1.rds.amazonaws.com");
         String port = EnvConfig.get("DB_PORT", "1433");
         String instance = EnvConfig.get("DB_INSTANCE", "");
         String dbName = EnvConfig.get("DB_NAME", "QuanLyPhongKhamDB");

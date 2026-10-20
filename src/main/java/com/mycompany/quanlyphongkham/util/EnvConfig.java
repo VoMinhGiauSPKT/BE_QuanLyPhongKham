@@ -9,15 +9,14 @@ public class EnvConfig {
 
     static {
         try {
-            // Check current directory
             File envFile = new File(".env");
+            File projectEnv = new File("D:\\ghichumonhoc\\hequantricsdl\\doancuoiki\\QuanLyPhongKham\\.env");
             if (envFile.exists()) {
                 dotenv = Dotenv.configure().load();
+            } else if (projectEnv.exists()) {
+                dotenv = Dotenv.configure().directory("D:\\ghichumonhoc\\hequantricsdl\\doancuoiki\\QuanLyPhongKham").load();
             } else {
-                // Check parent directories or project path
-                dotenv = Dotenv.configure()
-                        .ignoreIfMissing()
-                        .load();
+                dotenv = Dotenv.configure().ignoreIfMissing().load();
             }
         } catch (Exception e) {
             System.err.println("[EnvConfig] Dotenv could not load .env file directly, falling back to System environment: " + e.getMessage());
