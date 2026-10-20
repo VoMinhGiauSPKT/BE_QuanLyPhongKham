@@ -17,6 +17,10 @@ public class LeTanDAO {
     private static volatile boolean procUpdated = false;
     private static volatile boolean checkoutPermsUpdated = false;
 
+    static {
+        ensureCheckoutPermissions();
+    }
+
     private static synchronized void ensureCheckoutPermissions() {
         if (checkoutPermsUpdated) return;
         try (Connection conn = DBContext.getConnectionByRole("QUAN_TRI")) {
