@@ -32,6 +32,9 @@ GRANT EXECUTE ON sp_gd_ke_nhieu_thuoc TO vai_tro_bac_si;
 GRANT SELECT ON v_chi_tiet_kham_benh TO vai_tro_bac_si;
 GRANT SELECT ON fn_tim_thuoc_kha_dung TO vai_tro_bac_si;
 GRANT SELECT ON fn_lich_su_kham_benh TO vai_tro_bac_si;
+GRANT EXECUTE ON fn_tinh_tuoi TO vai_tro_bac_si;
+GRANT EXECUTE ON fn_tinh_tong_tien_thuoc TO vai_tro_bac_si;
+GRANT EXECUTE ON fn_tinh_tong_tien_dich_vu TO vai_tro_bac_si;
 
 -- Quyền sinh mã tự động (Sequences) khi bác sĩ thao tác bệnh án, chỉ định, đơn thuốc
 GRANT UPDATE ON SEQUENCE::seq_ho_so TO vai_tro_bac_si;
@@ -63,10 +66,16 @@ GRANT SELECT ON v_hang_cho_kham_hom_nay TO vai_tro_le_tan;
 GRANT SELECT ON v_doanh_thu_theo_ngay TO vai_tro_le_tan;
 
 -- Thực thi nghiệp vụ lễ tân và thanh toán
+GRANT SELECT ON thuoc TO vai_tro_le_tan;
+GRANT SELECT ON ho_so_kham TO vai_tro_le_tan;
 GRANT EXECUTE ON sp_tiep_nhan_kham TO vai_tro_le_tan;
 GRANT EXECUTE ON sp_tim_kiem_benh_nhan TO vai_tro_le_tan;
 GRANT EXECUTE ON sp_gd_thanh_toan_hoa_don TO vai_tro_le_tan;
 GRANT EXECUTE ON sp_gd_huy_lich_hen TO vai_tro_le_tan;
+GRANT EXECUTE ON sp_gd_huy_don_thuoc TO vai_tro_le_tan;
+GRANT EXECUTE ON fn_tinh_tuoi TO vai_tro_le_tan;
+GRANT EXECUTE ON fn_tinh_tong_tien_thuoc TO vai_tro_le_tan;
+GRANT EXECUTE ON fn_tinh_tong_tien_dich_vu TO vai_tro_le_tan;
 
 -- Quyền sinh mã tự động (Sequences) khi tiếp nhận bệnh nhân, xếp lịch, lập hóa đơn
 GRANT UPDATE ON SEQUENCE::seq_benh_nhan TO vai_tro_le_tan;
@@ -88,6 +97,9 @@ GRANT SELECT ON benh_nhan TO vai_tro_duoc_si;                     -- Đọc thô
 GRANT SELECT ON bac_si TO vai_tro_duoc_si;                        -- Đọc thông tin bác sĩ kê đơn
 GRANT SELECT ON nguoi_dung TO vai_tro_duoc_si;
 GRANT SELECT ON v_canh_bao_ton_kho_thuoc TO vai_tro_duoc_si;
+GRANT EXECUTE ON sp_gd_nhap_nhieu_thuoc TO vai_tro_duoc_si;
+GRANT EXECUTE ON fn_tinh_tuoi TO vai_tro_duoc_si;
+GRANT EXECUTE ON fn_tinh_tong_tien_thuoc TO vai_tro_duoc_si;
 
 -- Quyền sinh mã tự động khi dược sĩ thêm mới thuốc
 GRANT UPDATE ON SEQUENCE::seq_thuoc TO vai_tro_duoc_si;
@@ -96,4 +108,11 @@ GRANT UPDATE ON SEQUENCE::seq_thuoc TO vai_tro_duoc_si;
 DENY INSERT, UPDATE, DELETE ON lich_hen TO vai_tro_duoc_si;
 DENY INSERT, UPDATE, DELETE ON ho_so_kham TO vai_tro_duoc_si;
 DENY INSERT, UPDATE, DELETE ON hoa_don TO vai_tro_duoc_si;
+
+-- Quyền dùng chung an toàn trên hệ thống (public)
+GRANT EXECUTE ON dbo.fn_tinh_tuoi TO public;
+GRANT EXECUTE ON dbo.fn_tinh_tong_tien_thuoc TO public;
+GRANT EXECUTE ON dbo.fn_tinh_tong_tien_dich_vu TO public;
+GRANT SELECT ON dbo.fn_lich_su_kham_benh TO public;
+GRANT SELECT ON dbo.fn_tim_thuoc_kha_dung TO public;
 GO
